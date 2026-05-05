@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  tg-todo:
+    build: .
+    image: tg-todo:local
+    environment:
+      - TG_TOKEN=${TG_TOKEN}
+      - DB_DIR=/data
+      - DEBUG=false
+    volumes:
+      - ./volumes/tg-todo:/data
+    restart: unless-stopped
+

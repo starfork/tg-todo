@@ -1,0 +1,19 @@
+.DS_Store
+
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Output directories
+bin/
+dist/
+
+# Local data
+db/
+volumes/
+
