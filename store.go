@@ -86,11 +86,11 @@ func (l TodoList) FormatText() string {
 
 	var sb strings.Builder
 	for _, it := range items {
-		box := "☐"
+		suffix := ""
 		if it.Done {
-			box = "✅"
+			suffix = " √"
 		}
-		sb.WriteString(fmt.Sprintf("%s %d. %s\n", box, it.ID, it.Text))
+		sb.WriteString(fmt.Sprintf("%d. %s%s\n", it.ID, it.Text, suffix))
 	}
 	return strings.TrimRight(sb.String(), "\n")
 }

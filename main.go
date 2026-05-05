@@ -192,24 +192,38 @@ func storeIDForMessage(msg *tgbotapi.Message) int64 {
 }
 
 func sendList(bot *tgbotapi.BotAPI, chatID int64, list TodoList, title string, enableButtons bool) error {
-	var sb strings.Builder
-	if strings.TrimSpace(title) != "" {
-		sb.WriteString(title)
-		sb.WriteString("\n")
+	text := ""
+	if enableButtons && len(list.Items) > 0 {
+		text = listButtonsHintText(title)
+	} else {
+		var sb strings.Builder
+		if strings.TrimSpace(title) != "" {
+			sb.WriteString(title)
+			sb.WriteString("\n")
+		}
+		body := list.FormatText()
+		if body == "" {
+			body = "（空）\n\n直接发送多行文本即可快速添加任务。"
+		}
+		sb.WriteString(body)
+		text = sb.String()
 	}
-	body := list.FormatText()
-	if body == "" {
-		body = "（空）\n\n直接发送多行文本即可快速添加任务。"
-	}
-	sb.WriteString(body)
 
-	m := tgbotapi.NewMessage(chatID, sb.String())
+	m := tgbotapi.NewMessage(chatID, text)
 	m.DisableWebPagePreview = true
 	if enableButtons {
 		m.ReplyMarkup = buildListKeyboard(list)
 	}
 	_, err := bot.Send(m)
 	return err
+}
+
+func listButtonsHintText(title string) string {
+	title = strings.TrimSpace(title)
+	if title == "" {
+		return "点击对应条目切换完成状态"
+	}
+	return title + "\n" + "点击对应条目切换完成状态"
 }
 
 func sendText(bot *tgbotapi.BotAPI, chatID int64, text string) error {
@@ -313,8 +327,8 @@ func handleCallback(ctx context.Context, bot *tgbotapi.BotAPI, store *FileStore,
 		return err
 	}
 
-	body := list.FormatText()
-	if body == "" {
+	body := listButtonsHintText("")
+	if len(list.Items) == 0 {
 		body = "（空）\n\n直接发送多行文本即可快速添加任务。"
 	}
 
@@ -360,11 +374,11 @@ func buildListKeyboard(list TodoList) tgbotapi.InlineKeyboardMarkup {
 	sort.Slice(items, func(i, j int) bool { return items[i].ID < items[j].ID })
 
 	for _, it := range items {
-		box := "☐"
+		suffix := ""
 		if it.Done {
-			box = "✅"
+			suffix = " √"
 		}
-		label := fmt.Sprintf("%s %d. %s", box, it.ID, truncateForButton(it.Text, 40))
+		label := fmt.Sprintf("%d. %s%s", it.ID, truncateForButton(it.Text, 40), suffix)
 		btn := tgbotapi.NewInlineKeyboardButtonData(label, fmt.Sprintf("t:%d", it.ID))
 		rows = append(rows, tgbotapi.NewInlineKeyboardRow(btn))
 	}
