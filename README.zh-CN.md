@@ -54,8 +54,18 @@ docker run -d \
   tg-todo:local
 ```
 
+### 导出/导入镜像（tar）
+导出：
+```bash
+docker save tg-todo:local -o tg-todo_local.tar
+```
+
+导入：
+```bash
+docker load -i tg-todo_local.tar
+```
+
 ## 配置
 - TG_TOKEN（必填）：BotFather 发放的 token
 - DB_DIR（可选）：数据目录（默认 ./db；Docker 镜像默认 /data）
 - DEBUG（可选）：true/false，开启 go-telegram-bot-api 的 debug 日志
-

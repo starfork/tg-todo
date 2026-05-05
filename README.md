@@ -54,6 +54,17 @@ docker run -d \
   tg-todo:local
 ```
 
+### Export / Import image (tar)
+Export:
+```bash
+docker save tg-todo:local -o tg-todo_local.tar
+```
+
+Import:
+```bash
+docker load -i tg-todo_local.tar
+```
+
 ## Configuration
 - TG_TOKEN (required): token from BotFather
 - DB_DIR (optional): data directory (default `./db`; Docker image default `/data`)
