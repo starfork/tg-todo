@@ -112,6 +112,26 @@ func NewFileStore(dir string) (*FileStore, error) {
 	return &FileStore{dir: dir, locks: make(map[int64]*sync.Mutex)}, nil
 }
 
+func (s *FileStore) Ensure(ctx context.Context, chatID int64) error {
+	_ = ctx
+	lock := s.chatLock(chatID)
+	lock.Lock()
+	defer lock.Unlock()
+
+	if err := os.MkdirAll(s.dir, 0o755); err != nil {
+		return err
+	}
+
+	path := s.pathForChat(chatID)
+	if _, err := os.Stat(path); err == nil {
+		return nil
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+
+	return s.saveLocked(chatID, NewTodoList())
+}
+
 func (s *FileStore) Load(ctx context.Context, chatID int64) (TodoList, error) {
 	_ = ctx
 	lock := s.chatLock(chatID)
@@ -154,6 +174,11 @@ func (s *FileStore) Save(ctx context.Context, chatID int64, list TodoList) error
 	if err := os.MkdirAll(s.dir, 0o755); err != nil {
 		return err
 	}
+
+	return s.saveLocked(chatID, list)
+}
+
+func (s *FileStore) saveLocked(chatID int64, list TodoList) error {
 	path := s.pathForChat(chatID)
 
 	b, err := json.MarshalIndent(list, "", "  ")

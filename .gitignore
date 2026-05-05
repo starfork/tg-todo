@@ -16,4 +16,4 @@ dist/
 # Local data
 db/
 volumes/
-
+*.tar
