@@ -69,10 +69,21 @@ func (l *TodoList) Delete(id int) bool {
 	for i := range l.Items {
 		if l.Items[i].ID == id {
 			l.Items = append(l.Items[:i], l.Items[i+1:]...)
+			l.Reindex()
 			return true
 		}
 	}
 	return false
+}
+
+func (l *TodoList) Reindex() {
+	for i := range l.Items {
+		l.Items[i].ID = i + 1
+	}
+	l.NextID = len(l.Items) + 1
+	if l.NextID <= 0 {
+		l.NextID = 1
+	}
 }
 
 func (l TodoList) FormatText() string {

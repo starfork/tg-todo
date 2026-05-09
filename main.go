@@ -221,9 +221,9 @@ func sendList(bot *tgbotapi.BotAPI, chatID int64, list TodoList, title string, e
 func listButtonsHintText(title string) string {
 	title = strings.TrimSpace(title)
 	if title == "" {
-		return "点击对应条目切换完成状态"
+		return "点击条目切换完成状态"
 	}
-	return title + "\n" + "点击对应条目切换完成状态"
+	return title + "\n" + "点击条目切换完成状态"
 }
 
 func sendText(bot *tgbotapi.BotAPI, chatID int64, text string) error {
@@ -320,7 +320,7 @@ func handleCallback(ctx context.Context, bot *tgbotapi.BotAPI, store *FileStore,
 		return err
 	}
 	if !list.Toggle(itemID) {
-		_, _ = bot.Request(tgbotapi.NewCallback(q.ID, "没有找到对应编号的任务。"))
+		_, _ = bot.Request(tgbotapi.NewCallback(q.ID, ""))
 		return nil
 	}
 	if err := store.Save(ctx, storeID, list); err != nil {
@@ -351,16 +351,16 @@ func storeIDForCallback(q *tgbotapi.CallbackQuery) int64 {
 	return q.From.ID
 }
 
-func parseToggleCallbackData(data string) (int, bool) {
+func parseToggleCallbackData(data string) (id int, ok bool) {
 	data = strings.TrimSpace(data)
 	if !strings.HasPrefix(data, "t:") {
 		return 0, false
 	}
-	id, err := strconv.Atoi(strings.TrimPrefix(data, "t:"))
-	if err != nil || id <= 0 {
+	parsed, err := strconv.Atoi(strings.TrimPrefix(data, "t:"))
+	if err != nil || parsed <= 0 {
 		return 0, false
 	}
-	return id, true
+	return parsed, true
 }
 
 func buildListKeyboard(list TodoList) tgbotapi.InlineKeyboardMarkup {
@@ -379,8 +379,8 @@ func buildListKeyboard(list TodoList) tgbotapi.InlineKeyboardMarkup {
 			suffix = " √"
 		}
 		label := fmt.Sprintf("%d. %s%s", it.ID, truncateForButton(it.Text, 40), suffix)
-		btn := tgbotapi.NewInlineKeyboardButtonData(label, fmt.Sprintf("t:%d", it.ID))
-		rows = append(rows, tgbotapi.NewInlineKeyboardRow(btn))
+		toggleBtn := tgbotapi.NewInlineKeyboardButtonData(label, fmt.Sprintf("t:%d", it.ID))
+		rows = append(rows, tgbotapi.NewInlineKeyboardRow(toggleBtn))
 	}
 	return tgbotapi.NewInlineKeyboardMarkup(rows...)
 }
