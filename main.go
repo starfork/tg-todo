@@ -141,6 +141,9 @@ func handleCommand(ctx context.Context, bot *tgbotapi.BotAPI, store *FileStore, 
 		if err != nil {
 			return err
 		}
+		if len(list.Items) == 0 {
+			return sendText(bot, msg.Chat.ID, "暂无内容")
+		}
 		return sendList(bot, msg.Chat.ID, list, "", msg.Chat != nil && msg.Chat.IsPrivate())
 	case "done", "undone", "del":
 		if args == "" {
